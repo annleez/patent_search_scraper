@@ -27,7 +27,7 @@ def scrape_patents(query: str):
     time.sleep(2) # let results load
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     
-    # For top ten results, gather patent name and ID
+    # Grab patent ID for top ten results
     result_titles = soup.find_all(class_='result-title')
     for title in result_titles:
         patent = title.get('data-result') # ex. patent/JP4406937B2/en
