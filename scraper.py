@@ -80,7 +80,7 @@ if __name__ == "__main__":
         # change to user-specified output path
         if len(sys.argv) == 3:
             csv_file_path = sys.argv[2]
-            assert(csv_file_path.endswith(".txt")), "ERROR: output file must end with '.txt'"
+            assert(csv_file_path.endswith(".csv")), "ERROR: output file must end with '.csv'"
 
     else:
         print("ERROR: see readme for intended usage")
