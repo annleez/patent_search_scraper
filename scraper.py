@@ -3,7 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time, re, sys, csv
-from typing import Set, List
+from typing import Set, List, Any
 
 def transform_query_to_url(query: str) -> str:
     """
@@ -15,8 +15,9 @@ def transform_query_to_url(query: str) -> str:
     url = "https://patents.google.com/?q=" + transformed_query
     return url
 
-def scrape_patents(query: str):
-    # Scrape Google Patent search results
+# returns format: [total number of results, top 10 results]
+def scrape_patents(query: str) -> List[Any]:
+    # scrape Google Patent search results
     # Selenium tutorial: https://medium.com/analytics-vidhya/web-scraping-google-search-results-with-selenium-and-beautifulsoup-4c534817ad88
     patent_ids = set() # set to hold patent ids
     option = webdriver.ChromeOptions()
@@ -26,8 +27,16 @@ def scrape_patents(query: str):
     driver.get(url)
     time.sleep(2) # let results load
     soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # with open("soup.py", 'w', newline='') as file:
+    #     file.write(soup.prettify())
+    # file.close()
+
+    # grab total number of results
+    num_results_span = soup.find(id='numResultsLabel')
+    num_results_text = num_results_span.get_text(strip=True)
+    num_results = int(''.join(filter(str.isdigit, num_results_text)))
     
-    # Grab patent ID for top ten results
+    # grab patent ID for top ten results
     result_titles = soup.find_all(class_='result-title')
     for title in result_titles:
         patent = title.get('data-result') # ex. patent/JP4406937B2/en
@@ -36,7 +45,7 @@ def scrape_patents(query: str):
     assert(len(patent_ids) == 10), "ERROR: search must have at least 10 results"
 
     driver.quit()
-    return patent_ids
+    return [num_results,patent_ids]
 
 def get_distances(term1_results: Set[str], term2_results: Set[str], both_results: Set[str]) -> List[int]:
     def jaccard_distance(set1, set2):
@@ -89,8 +98,8 @@ if __name__ == "__main__":
     # write output to csv
     headers = [
         "Both terms", "Both terms: results",
-        "Term 1", "Term 1: results",
-        "Term 2", "Term 2: results",
+        "Term 1", "Term 1: total results", "Term 1: top results",
+        "Term 2", "Term 2: total results", "Term 2: top results",
         "Jaccard distance (Term 1, Term 2)", "Jaccard distance (Term 1, Both terms)", "Jaccard distance (Term 2, Both terms)", "Dice distance (Term 1, Term 2)", "Dice distance (Term 1, Both terms)", "Dice distance (Term 2, Both terms)"]
     with open(csv_file_path, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -109,15 +118,15 @@ if __name__ == "__main__":
 
             # search by all query terms together
             search_results = scrape_patents(query)
-            results.append(search_results)
-            this_row.append(search_results)
+            results.append(search_results[1]) #  will analyze top 10 results
+            this_row += search_results # log number of total results & top 10 results
 
             # search by acronym and definition individually
             for term in query_terms:
                 this_row.append(term)
                 search_results = scrape_patents(term)
-                results.append(search_results)
-                this_row.append(search_results)
+                results.append(search_results[1])
+                this_row += search_results
 
             # conduct distance analysis if 2 terms
             if len(query_terms) == 2:
