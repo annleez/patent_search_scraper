@@ -9,14 +9,22 @@ For me, all packages installed with python's 3.9 interpreter.
 ## scraper.py
 
 This web scraper searches Google Patents and analyzes the results.
-It will log patent IDs for the top ten results.
+It will log total results and patent IDs for the top ten results.
 **Terms are separated by commas; each term can have 1 or multiple words.**
-If given a *2-term query*, ex. "dslr camera, digital single lens reflex camera",
-it will analyze Jaccard and Dice distances for the results of searching by
-term 1 ("dslr camera"), term 2 ("digital single lens reflex camera"), and both
-terms ("dslr camera, digital single lens reflex camera").
-If given a *single-term query*, the scraper will log results for that query, but
-the rows corresponding to term 2 and distance analysis will remain blank.
+
+Given a *2-term query*, ex. "dslr, digital single lens reflex", it will
+analyze Jaccard and Dice distances for the results of searching by term 1
+("dslr"), term 2 ("digital single lens reflex"), and a Boolean combination
+of terms ("dslr OR digital single lens reflex").
+
+Given a *2-term query and acronym*, ex. "dslr camera, digital single lens reflex,
+dslr", it will do all of the above to evaluate your terms as (acronym form,
+expanded form), *using the given acronym to determine the Boolean query*.
+Ex. term 1 ("dslr camera"), term 2 ("digital single lens reflex camera"), and a
+Boolean combination of terms ("(dslr OR digital single lens reflex) AND camera")
+
+Given a *single-term query*, the scraper will log results for that query, but
+the rows corresponding to other terms and distance analysis will remain blank.
 
 USAGE EXAMPLE 1
 `python scraper.py example_terms.txt [output_file.csv]`
