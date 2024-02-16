@@ -1,4 +1,4 @@
-dslr camera, digital single lens reflex camera
-ccd camera sensor, charge-coupled device camera sensor
-emccd camera sensor, electron-multiplied charge-coupled device camera sensor
-cmos camera sensor, complementary metal-oxide-semiconductor camera sensor
+dslr camera, digital single lens reflex camera, dslr
+ccd camera sensor, charge-coupled device camera sensor, ccd
+emccd camera sensor, electron-multiplied charge-coupled device camera sensor, emccd
+cmos camera sensor, complementary metal-oxide-semiconductor camera sensor, cmos
