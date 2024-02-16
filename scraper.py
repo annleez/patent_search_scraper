@@ -6,15 +6,14 @@ import time, re, sys, csv
 from typing import Set, List, Any
 
 def get_bool_query(first_term: str, second_term: str, acronym = "") -> str:
-    # Transform query from "dslr camera, digital single lens reflex camera"
-    # -> (dslr OR digital single lens reflex) AND camera
+    '''Transform query from "dslr camera, digital single lens reflex camera"
+    -> (dslr OR digital single lens reflex) AND camera'''
     if acronym == "" or acronym == first_term or acronym == second_term: # handle two-term input w/o overlap
         return f"{first_term} OR {second_term}"
     
-    ''' right now this only works for pretty simple cases where acronym
-    is at the beginning or end of either term... since we don't
-    have an acronym identification/diambiguation system yet
-    '''
+    #  right now this only works for pretty simple cases where acronym
+    # is at the beginning or end of either term... since we don't
+    # have an acronym identification/diambiguation system yet
     if first_term.find(acronym) != -1: # acronym in first term
         overlap = first_term.replace(acronym, "").strip()
         definition = (second_term.replace(overlap, "")).strip()
@@ -27,10 +26,10 @@ def get_bool_query(first_term: str, second_term: str, acronym = "") -> str:
     return f"({acronym} OR {definition}) AND {overlap}"
 
 def transform_query_to_url(query: str) -> str:
-    """
+    '''
     Transform query to this format: "dslr camera" -> "(dslr+camera)"
     For multi-term queries: "cats, dogs" -> "(cats%2c+dogs)"
-    """
+    '''
     transformed_query = (query.replace(" ", "+")).replace(",", "%2c")
     transformed_query = "(" + transformed_query + ")"
     url = "https://patents.google.com/?q=" + transformed_query
@@ -38,7 +37,7 @@ def transform_query_to_url(query: str) -> str:
 
 # returns format: [total number of results, top 10 results]
 def scrape_patents(query: str) -> List[Any]:
-    # scrape Google Patent search results
+    '''scrape Google Patent search results'''
     # Selenium tutorial: https://medium.com/analytics-vidhya/web-scraping-google-search-results-with-selenium-and-beautifulsoup-4c534817ad88
     patent_ids = set() # set to hold patent ids
     option = webdriver.ChromeOptions()
@@ -69,6 +68,7 @@ def scrape_patents(query: str) -> List[Any]:
     return [num_results,patent_ids]
 
 def get_distances(term1_results: Set[str], term2_results: Set[str], both_results: Set[str]) -> List[int]:
+    '''calculate jaccard and dice distances'''
     def jaccard_distance(set1, set2):
         intersection = len(set1.intersection(set2))
         union = len(set1.union(set2))
