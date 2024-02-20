@@ -1,8 +1,11 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 from webdriver_manager.chrome import ChromeDriverManager
-import time, re, sys, csv
+import re, sys, csv
 from typing import Set, List, Any
 
 def get_bool_query(first_term: str, second_term: str, acronym = "") -> str:
@@ -35,36 +38,43 @@ def transform_query_to_url(query: str) -> str:
     url = "https://patents.google.com/?q=" + transformed_query
     return url
 
-# returns format: [total number of results, top 10 results]
 def scrape_patents(query: str) -> List[Any]:
     '''scrape Google Patent search results'''
     # Selenium tutorial: https://medium.com/analytics-vidhya/web-scraping-google-search-results-with-selenium-and-beautifulsoup-4c534817ad88
+    num_results = 0
     patent_ids = set() # set to hold patent ids
     option = webdriver.ChromeOptions()
     option.add_argument("--headless")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=option)
-    url = transform_query_to_url(query)
-    driver.get(url)
-    time.sleep(2) # let results load
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    # with open("soup.py", 'w', newline='') as file:
-    #     file.write(soup.prettify())
-    # file.close()
 
-    # grab total number of results
-    num_results_span = soup.find(id='numResultsLabel')
-    num_results_text = num_results_span.get_text(strip=True)
-    num_results = int(''.join(filter(str.isdigit, num_results_text)))
-    
-    # grab patent ID for top ten results
-    result_titles = soup.find_all(class_='result-title')
-    for title in result_titles:
-        patent = title.get('data-result') # ex. patent/JP4406937B2/en
-        patent_parts = re.split('/', patent) # "patent", patent ID, language (ex. en)
-        patent_ids.add(patent_parts[1])
-    assert(len(patent_ids) == 10), "ERROR: search must have at least 10 results"
+    with open("soup.py", 'w', newline='') as file:
+        for page in range(2): # first 2 pages of results
+            url = transform_query_to_url(query) + f"&page={page}"
+            driver.get(url)
+            WebDriverWait(driver, 10).until( # let results load
+                expected_conditions.presence_of_element_located((By.ID, "numResultsLabel"))
+            )
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            file.write(soup.prettify())
+            print(url)
 
+            # grab total number of results
+            if page == 0:
+                num_results_span = soup.find(id='numResultsLabel')
+                num_results_text = num_results_span.get_text(strip=True)
+                num_results = int(''.join(filter(str.isdigit, num_results_text)))
+                assert(num_results >= 10), "ERROR: search must have at least 10 results"
+
+            # grab patent ID for top ten results
+            result_titles = soup.find_all(class_='result-title')
+            for title in result_titles:
+                patent = title.get('data-result') # ex. patent/JP4406937B2/en
+                patent_parts = re.split('/', patent) # "patent", patent ID, language (ex. en)
+                patent_ids.add(patent_parts[1])
+
+    file.close()
     driver.quit()
+
     return [num_results,patent_ids]
 
 def get_distances(term1_results: Set[str], term2_results: Set[str], both_results: Set[str]) -> List[int]:
