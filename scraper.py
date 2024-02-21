@@ -38,14 +38,11 @@ def transform_query_to_url(query: str) -> str:
     url = "https://patents.google.com/?q=" + transformed_query
     return url
 
-def scrape_patents(query: str) -> List[Any]:
+def scrape_google_patents(driver, query: str) -> List[Any]:
     '''scrape Google Patent search results'''
     # Selenium tutorial: https://medium.com/analytics-vidhya/web-scraping-google-search-results-with-selenium-and-beautifulsoup-4c534817ad88
     num_results = 0
     patent_ids = set() # set to hold patent ids
-    option = webdriver.ChromeOptions()
-    option.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=option)
 
     with open("soup.py", 'w', newline='') as file:
         for page in range(2): # first 2 pages of results
@@ -73,7 +70,6 @@ def scrape_patents(query: str) -> List[Any]:
                 patent_ids.add(patent_parts[1])
 
     file.close()
-    driver.quit()
 
     return [num_results,patent_ids]
 
@@ -137,6 +133,12 @@ if __name__ == "__main__":
         writer.writerow(headers)
     file.close()
 
+    # create web driver instance
+    option = webdriver.ChromeOptions()
+    option.add_argument("--headless")
+    option.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=option)
+
     with open(csv_file_path, 'a', newline='') as file:
         writer = csv.writer(file)
         for query in queries:
@@ -148,27 +150,29 @@ if __name__ == "__main__":
             assert(len(query_terms) <= 3), "ERROR: must query by 1-3 comma-separated terms at a time"
 
             # search by acronym and definition individually
-            for i in range(2):
+            for i in range(min(2, len(query_terms))):
                 this_row.append(query_terms[i])
-                search_results = scrape_patents(query_terms[i])
+                search_results = scrape_google_patents(driver, query_terms[i])
                 results.append(search_results[1])
                 this_row += search_results
 
             # search by all Boolean combination of terms
             # (acronym OR definition) ... AND rest of term, if applicable
             # ex. (dslr OR digital single lens reflex) AND camera
+            bool_query = ""
             if len(query_terms) == 3: # yes, acronym input
                 bool_query = get_bool_query(query_terms[0], query_terms[1], query_terms[2])
-            else:
+            elif len(query_terms) == 2:
                 bool_query = get_bool_query(query_terms[0], query_terms[1])
+                
             if bool_query != "":
                 this_row.append(bool_query) # include bool query string in output as sanity check
-                search_results = scrape_patents(bool_query)
+                search_results = scrape_google_patents(driver, bool_query)
                 results.append(search_results[1]) #  will analyze top 10 results
                 this_row += search_results # log number of total results & top 10 results
             else:
                 results.append(None)
-                this_row.append(["","",""])
+                this_row.extend(['','',''])
             
             # conduct distance analysis if we have 2 terms
             if len(results) == 3:
@@ -178,3 +182,4 @@ if __name__ == "__main__":
 
     print(f"Output saved to {csv_file_path}")
     file.close()
+    driver.quit()
