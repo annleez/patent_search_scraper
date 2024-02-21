@@ -100,13 +100,13 @@ def get_distances(term1_results: Set[str], term2_results: Set[str], both_results
     return distances
 
 if __name__ == "__main__":
-    csv_file_path = 'output.csv'
+    csv_file_path = 'output/output.csv' # folder for output
 
     if len(sys.argv) == 1:
         query = input("Enter your query: ")
         queries = [query]
         
-    elif len(sys.argv) <= 3:
+    elif len(sys.argv) <= 2:
         input_file = sys.argv[1]
         with open(input_file, 'r') as file:
             file_contents = file.read()
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
         # change to user-specified output path
         if len(sys.argv) == 3:
-            csv_file_path = sys.argv[2]
+            csv_file_path = 'output/' + sys.argv[2]
             assert(csv_file_path.endswith(".csv")), "ERROR: output file must end with '.csv'"
 
     else:
