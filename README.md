@@ -6,7 +6,7 @@ To install the necessary requirements run:
 ## scraper.py
 
 This web scraper searches Google Patents and analyzes the results.
-It will log total results and patent IDs for the top ten results.
+It will log total results and patent IDs for the top 20 results.
 **Terms are separated by commas; each term can have 1 or multiple words.**
 
 Given a *2-term query*, ex. "dslr, digital single lens reflex", it will
