@@ -106,7 +106,11 @@ if __name__ == "__main__":
         query = input("Enter your query: ")
         queries = [query]
         
-    elif len(sys.argv) <= 2:
+    elif len(sys.argv) > 3:
+        print("ERROR: see readme for intended usage")
+        sys.exit()
+        
+    else: # 2 or 3 arguments
         input_file = sys.argv[1]
         with open(input_file, 'r') as file:
             file_contents = file.read()
@@ -117,10 +121,6 @@ if __name__ == "__main__":
         if len(sys.argv) == 3:
             csv_file_path = 'output/' + sys.argv[2]
             assert(csv_file_path.endswith(".csv")), "ERROR: output file must end with '.csv'"
-
-    else:
-        print("ERROR: see readme for intended usage")
-        sys.exit()
 
     # write output to csv
     headers = [
