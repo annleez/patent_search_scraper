@@ -11,8 +11,8 @@ import pdb # debugging
 
 def get_bool_queries(first_term: str, second_term: str, acronym = "") -> List[str]:
     '''Transform query to OR and AND boolean forms, ex. from "dslr camera, digital 
-    single lens reflex camera" -> [(dslr OR digital single lens reflex) AND camera,
-    (dslr AND digital single lens reflex) AND camera]'''
+    single lens reflex camera" -> [(dslr OR digital single lens reflex) camera,
+    (dslr AND digital single lens reflex) camera]'''
     if acronym == "" or acronym == first_term or acronym == second_term: # handle two-term input w/o overlap
         return [f"{first_term} OR {second_term}", f"{first_term} AND {second_term}"]
     
@@ -28,7 +28,7 @@ def get_bool_queries(first_term: str, second_term: str, acronym = "") -> List[st
     else: # acronym not found
         return ["", ""]
     
-    return [f"({acronym} OR {definition}) AND {overlap}", f"({acronym} AND {definition}) AND {overlap}"]
+    return [f"({acronym} OR {definition}) {overlap}", f"({acronym} AND {definition}) {overlap}"]
 
 def transform_query_to_url(query: str) -> str:
     '''
@@ -51,7 +51,7 @@ def scrape_google_patents(driver, query: str) -> List[Any]:
         for page in range(3): # first 3 pages of results
             url = transform_query_to_url(query) + f"&page={page}"
             driver.get(url)
-            WebDriverWait(driver, 10).until( # let results load
+            WebDriverWait(driver, 20).until( # let results load
                 expected_conditions.presence_of_element_located((By.ID, "numResultsLabel"))
             )
             soup = BeautifulSoup(driver.page_source, 'html.parser')
