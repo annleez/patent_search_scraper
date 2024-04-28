@@ -75,37 +75,24 @@ def scrape_google_patents(driver, query: str) -> List[Any]:
 
     return [num_results,patent_ids]
 
-def get_distances(term1_results: Set[str], term2_results: Set[str], or_results: Set[str], and_results: Set[str]) -> List[int]:
-    '''calculate jaccard and dice distances'''
+def get_jaccard(term1_results: Set[str], term2_results: Set[str], or_results: Set[str], and_results: Set[str]) -> List[int]:
+    '''calculate jaccard index: set intersection / set union '''
     def jaccard_distance(set1, set2):
         intersection = len(set1.intersection(set2))
         union = len(set1.union(set2))
-        return 1 - (intersection / union)
-        
+        return intersection / union
 
-    def dice_distance(set1, set2):
-        intersection = len(set1.intersection(set2))
-        sorensen_dice_coeff = (2.0 * intersection) / (len(set1) + len(set2))
-        return 1 - sorensen_dice_coeff
+    values = []
 
-    distances = []
-
-    # Jaccard distances: treats all elements equally
-    # Dice distances: prefers overlapping elements (considers order)
-    distances.append(jaccard_distance(term1_results, term2_results))
-    distances.append(dice_distance(term1_results, term2_results))
+    values.append(jaccard_distance(term1_results, term2_results))
     if or_results != None:
-        distances.append(jaccard_distance(term1_results, or_results))
-        distances.append(dice_distance(term1_results, or_results))
-        distances.append(jaccard_distance(term2_results, or_results))
-        distances.append(dice_distance(term2_results, or_results))
+        values.append(jaccard_distance(term1_results, or_results))
+        values.append(jaccard_distance(term2_results, or_results))
     if and_results != None:
-        distances.append(jaccard_distance(term1_results, and_results))
-        distances.append(dice_distance(term1_results, and_results))
-        distances.append(jaccard_distance(term2_results, and_results))
-        distances.append(dice_distance(term2_results, and_results))
+        values.append(jaccard_distance(term1_results, and_results))
+        values.append(jaccard_distance(term2_results, and_results))
     
-    return distances
+    return values
 
 if __name__ == "__main__":
     csv_file_path = 'output/output.csv' # folder for output
@@ -136,7 +123,7 @@ if __name__ == "__main__":
         "Term 2", "Term 2: total results", "Term 2: top results",
         "OR term", "OR term: total results", "OR term: top results",
         "AND term", "AND term: total results", "AND term: top results",
-        "Jaccard distance (Term 1, Term 2)", "Dice distance (Term 1, Term 2)", "Jaccard distance (Term 1, OR term)", "Dice distance (Term 1, OR term)", "Jaccard distance (Term 2, OR term)", "Dice distance (Term 2, OR term)", "Jaccard distance (Term 1, AND term)", "Dice distance (Term 1, AND term)", "Jaccard distance (Term 2, AND term)", "Dice distance (Term 2, AND term)"]
+        "Jaccard index (Term 1, Term 2)", "Jaccard index (Term 1, OR term)", "Jaccard index (Term 2, OR term)", "Jaccard index (Term 1, AND term)", "Jaccard index (Term 2, AND term)"]
     with open(csv_file_path, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(headers)
@@ -197,7 +184,7 @@ if __name__ == "__main__":
             
             # conduct distance analysis if we have enough terms
             if len(results) >= 3:
-                this_row += get_distances(results[0], results[1], results[2], results[3])
+                this_row += get_jaccard(results[0], results[1], results[2], results[3])
 
             writer.writerow(this_row)
 

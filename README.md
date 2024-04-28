@@ -13,8 +13,8 @@ For scraping USPTO, **please make sure** you do not have a separate instance of
 https://ppubs.uspto.gov/pubwebapp/ open, or your scraper will be blocked.
 
 Given a *2-term query*, ex. "dslr, digital single lens reflex", it will
-analyze Jaccard and Dice distances for the results of searching by term 1
-("dslr"), term 2 ("digital single lens reflex"), and a Boolean combination
+calculate Jaccard similarity coefficients for the results of searching by term
+1 ("dslr"), term 2 ("digital single lens reflex"), and a Boolean combination
 of terms ("dslr OR digital single lens reflex").
 
 Given a *2-term query and acronym*, ex. "dslr camera, digital single lens reflex,

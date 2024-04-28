@@ -10,7 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import re, sys, csv, time
 from typing import Set, List, Any
 import pdb # debugging
-from scraper import get_bool_queries, get_distances
+from scraper import get_bool_queries, get_jaccard
 
 def scrape_uspto(driver, query: str) -> List[Any]:
     num_results = 0
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         "Term 2", "Term 2: total results", "Term 2: top results",
         "OR term", "OR term: total results", "OR term: top results",
         "AND term", "AND term: total results", "AND term: top results",
-        "Jaccard distance (Term 1, Term 2)", "Dice distance (Term 1, Term 2)", "Jaccard distance (Term 1, OR term)", "Dice distance (Term 1, OR term)", "Jaccard distance (Term 2, OR term)", "Dice distance (Term 2, OR term)", "Jaccard distance (Term 1, AND term)", "Dice distance (Term 1, AND term)", "Jaccard distance (Term 2, AND term)", "Dice distance (Term 2, AND term)"]
+        "Jaccard index (Term 1, Term 2)", "Jaccard index (Term 1, OR term)", "Jaccard index (Term 2, OR term)", "Jaccard index (Term 1, AND term)", "Jaccard index (Term 2, AND term)"]
     with open(csv_file_path, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(headers)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             
             # conduct distance analysis if we have enough terms
             if len(results) >= 3:
-                this_row += get_distances(results[0], results[1], results[2], results[3])
+                this_row += get_jaccard(results[0], results[1], results[2], results[3])
             
             writer.writerow(this_row)
 
